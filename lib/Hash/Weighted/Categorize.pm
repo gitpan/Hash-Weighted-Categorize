@@ -1,6 +1,6 @@
 package Hash::Weighted::Categorize;
 {
-  $Hash::Weighted::Categorize::VERSION = '0.001';
+  $Hash::Weighted::Categorize::VERSION = '0.002';
 }
 
 # code eval'ed by Hash::Weighted::Categorize
@@ -43,16 +43,12 @@ Hash::Weighted::Categorize - Categorize weighted hashes using a Domain Specific 
 
 =head1 VERSION
 
-version 0.001
+version 0.002
 
 =head1 SYNOPSIS
 
     # create a parser
-    my $parser = Hash::Weighted::Categorize->new(
-        input   => [qw( OK WARN CRIT UNKN )],
-        default => 'OK',
-        strict => 1,    # die when the hash contains unknown status names
-    );
+    my $parser = Hash::Weighted::Categorize->new();
 
     # generate a scoring function
     my $score = $parser->parse( << 'CODE' );
@@ -122,8 +118,27 @@ A literal number followed by a C<%> sign is simply divided by C<100>.
 The currently supported mathematical operators are:
 C<+>, C<->, C<*> and C</>.
 
-The currently suppored comparison operators are:
-C<< < >>, C<< <= >>, C<==>, C<< > >> and C<< >= >>.
+The currently supported comparison operators are:
+C<< < >>, C<< <= >>, C<==>, C<!=>, C<< > >> and C<< >= >>.
+
+The mini-language supports the use of brace-delimited blocks, nested at
+an arbitrary depth, which allows to write complex expressions such as:
+
+    %CRIT >= 10%: {
+         %CRIT > 20% : CRIT;
+         %OK   > 85% : OK;
+         WARN;
+    }
+    WARN > 0 : WARN;
+    OK;
+
+which is equivalent to:
+
+    %CRIT >= 10%, %CRIT > 20% : CRIT;
+    %CRIT >= 10%, %OK   > 85% : OK;
+    %CRIT >= 10%              : WARN;
+    WARN > 0 : WARN;
+    OK;
 
 =head1 BUGS
 
